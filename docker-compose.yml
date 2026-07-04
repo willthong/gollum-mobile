@@ -1,6 +1,6 @@
 services:
   gollum:
-    image: ghcr.io/YOUR_USERNAME/gollum-mobile:latest
+    image: ghcr.io/willthong/gollum-mobile:master
     container_name: gollum-wiki
     restart: unless-stopped
     ports:
@@ -11,6 +11,8 @@ services:
     environment:
       - RACK_ENV=production
       - APP_ENV=production
+      # ACE editor auto-hides on viewports narrower than this (pixels)
+      - GOLLUM_MOBILE_THRESHOLD=768
     command: >
       --math katex
       --allow-uploads dir

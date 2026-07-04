@@ -121,6 +121,7 @@ module Precious
       
       @wiki_title = settings.wiki_options.fetch(:title, 'Gollum Wiki')
       @default_keybinding = settings.wiki_options.fetch(:default_keybinding, 'default')
+      @mobile_threshold = ENV.fetch('GOLLUM_MOBILE_THRESHOLD', 768).to_i
 
       if settings.wiki_options[:template_dir]
         Precious::Views::Layout.template_priority_path = settings.wiki_options[:template_dir]

@@ -8,6 +8,10 @@ module Precious
       @default_keybinding
     end
 
+    def mobile_threshold
+      @mobile_threshold
+    end
+
     def keybindings
       Gollum::KEYBINDINGS.map do |kb|
         { :name => kb,

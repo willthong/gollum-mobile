@@ -588,7 +588,8 @@ $(document).ready(function() {
 
     $.GollumEditor({
       section: window.location.hash.substr(1),
-      commands: editorHotkeys // Ace's keybindings overrule mousetrap, so add some of gollum's keyboard shortcuts to the editor, as well.
+      commands: editorHotkeys, // Ace's keybindings overrule mousetrap, so add some of gollum's keyboard shortcuts to the editor, as well.
+      MobileThreshold: mobile_threshold
     });
 
     $("#gollum-editor-submit").click( function(e) {
@@ -742,7 +743,7 @@ $(document).ready(function() {
     $("#gollum-editor-body").one('change', function(){
       window.onbeforeunload = function(){ return "Leaving will not create a new page!" };
     });
-    $.GollumEditor({ NewFile: true, MarkupType: default_markup, commands: editorHotkeys });
+    $.GollumEditor({ NewFile: true, MarkupType: default_markup, commands: editorHotkeys, MobileThreshold: mobile_threshold });
   }
 
   if($('#search-results').length ){
