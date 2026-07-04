@@ -22,6 +22,7 @@ RUN gem install \
     org-ruby \
     RedCloth \
     bibtex-ruby \
+    omnigollum \
     && echo "gem-extra complete"
 
 WORKDIR /app
