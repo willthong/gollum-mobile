@@ -1,0 +1,17 @@
+services:
+  gollum:
+    image: ghcr.io/YOUR_USERNAME/gollum-mobile:latest
+    container_name: gollum-wiki
+    restart: unless-stopped
+    ports:
+      - "4567:4567"
+    volumes:
+      # Mount your git wiki repository
+      - ./mywiki.git:/wiki
+    environment:
+      - RACK_ENV=production
+      - APP_ENV=production
+    command: >
+      --math katex
+      --allow-uploads dir
+      --emoji

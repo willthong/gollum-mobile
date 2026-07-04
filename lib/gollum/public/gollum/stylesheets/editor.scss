@@ -81,6 +81,34 @@ a {
     height: 30em;
   }
 
+  /*
+   * Mobile-friendly textarea styling (ACE auto-hide).
+   *
+   * This static rule is a fallback.  The JS in gollum.editor.js dynamically
+   * injects an identical @media rule using the configured MobileThreshold
+   * option (default 768px), so the breakpoint is configurable from one place.
+   * Keep these two in sync manually if you change the default.
+   */
+  @media all and (max-width: 767px) {
+    textarea#gollum-editor-body {
+      display: block !important;
+      height: 20em;
+      font-size: 16px;  /* prevents iOS auto-zoom on focus */
+      width: 100%;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+
+    #gollum-editor-function-bar {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #gollum-editor-function-buttons {
+      white-space: nowrap;
+    }
+  }
+
   .collapsed {
     h4 {
       color: #bbb;
