@@ -23,6 +23,7 @@ RUN gem install \
     RedCloth \
     bibtex-ruby \
     omnigollum \
+    omniauth-google-oauth2 \
     && echo "gem-extra complete"
 
 WORKDIR /app
