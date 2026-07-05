@@ -138,6 +138,9 @@
           $('#gollum-editor-help').hide().removeClass('jaws');
         }
 
+        // Hide the upload spinner — normally hidden by ACE-div CSS rule
+        $('#uploading').hide();
+
         // Disable ACE-specific buttons
         $('#function-text-direction').prop('disabled', true);
         $('#gollum-editor-function-bar button.function-button')
