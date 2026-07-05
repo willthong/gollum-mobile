@@ -41,6 +41,113 @@
   {{#sprockets_javascript_tag}}app{{/sprockets_javascript_tag}}
   {{#has_editor}}
   {{#sprockets_javascript_tag}}editor{{/sprockets_javascript_tag}}
+  {{#has_editor}}
+  <script>
+  // Mobile ACE editor auto-hide — runs after compiled editor.js but before DOM ready fires
+  (function() {
+    var threshold = typeof mobile_threshold !== 'undefined' ? mobile_threshold : 768;
+
+    function isMobile() {
+      return window.innerWidth < threshold;
+    }
+
+    // Inject mobile-friendly CSS for the textarea
+    (function() {
+      var css = [
+        '@media all and (max-width: ' + (threshold - 1) + 'px) {',
+        '  textarea#gollum-editor-body {',
+        '    display: block !important;',
+        '    height: 20em;',
+        '    font-size: 16px;',
+        '    width: 100%;',
+        '    box-sizing: border-box;',
+        '    resize: vertical;',
+        '  }',
+        '  #gollum-editor-function-bar {',
+        '    overflow-x: auto;',
+        '    -webkit-overflow-scrolling: touch;',
+        '  }',
+        '  #gollum-editor-function-buttons {',
+        '    white-space: nowrap;',
+        '  }',
+        '}'
+      ].join('\n');
+      var style = document.createElement('style');
+      style.type = 'text/css';
+      style.appendChild(document.createTextNode(css));
+      document.head.appendChild(style);
+    })();
+
+    // On mobile: override $.GollumEditor before DOM ready calls it
+    if (isMobile()) {
+      var origGollumEditor = $.GollumEditor;
+      $.GollumEditor = function(opts) {
+        opts = opts || {};
+        opts = $.extend({}, opts);
+
+        // Keep the textarea visible, skip ACE entirely
+        $('textarea[id="gollum-editor-body"]').each(function() {
+          var textarea = $(this);
+          textarea.css('display', '');
+
+          // Restore autosaved text
+          var storageKey = 'gollum_autorecover_' + window.location;
+          var savedText = localStorage.getItem(storageKey);
+          if (savedText) {
+            $('#gollum-autorecover-button').click(function(e) {
+              textarea.val(savedText);
+              ['header', 'footer', 'sidebar'].forEach(function(i) {
+                var sb = localStorage.getItem(storageKey + '_' + i);
+                if (sb) $('#gollum-editor-' + i).val(sb);
+              });
+              $('#gollum-autorecover-msg')[0].hidden = true;
+              e.preventDefault();
+            });
+            $('#gollum-autorecover-msg')[0].hidden = false;
+          }
+
+          // Set up autosave on textarea
+          var autoSaveTimer = null;
+          textarea.on('change keyup paste', function() {
+            if (autoSaveTimer) clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(function() {
+              localStorage.setItem(storageKey, textarea.val());
+              ['header', 'footer', 'sidebar'].forEach(function(i) {
+                var el = document.getElementById('gollum-editor-' + i);
+                if (el) localStorage.setItem(storageKey + '_' + i, el.value);
+              });
+            }, 2000);
+          });
+        });
+
+        // Wire up format selector
+        $('#wiki_format').on('change', function(event, val) {
+          $('#format').attr('value', val);
+        });
+
+        // Remove autosaved text on save/cancel
+        $('#gollum-editor-submit, #gollum-editor-cancel').click(function() {
+          var k = 'gollum_autorecover_' + window.location;
+          localStorage.removeItem(k);
+          ['header', 'footer', 'sidebar'].forEach(function(i) {
+            localStorage.removeItem(k + '_' + i);
+          });
+        });
+
+        // Show help panel
+        if ($('#gollum-editor-help').length) {
+          $('#gollum-editor-help').hide().removeClass('jaws');
+        }
+
+        // Disable ACE-specific buttons
+        $('#function-text-direction').prop('disabled', true);
+        $('#gollum-editor-function-bar button.function-button')
+          .not('#function-help')
+          .prop('disabled', true);
+      };
+    }
+  })();
+  </script>
   {{/has_editor}}
 
   {{#katex}}
