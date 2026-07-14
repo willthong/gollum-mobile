@@ -98,6 +98,7 @@ en:
     aria:
       show_all: Show all hits on this page
     back_to_top: Back to Top
+    browse_by_tag: "Browse by tag"
     no_results: There are no results for your search.
     search_results_for: "Search results for %{query}"
     title: "Search results for %{query}"

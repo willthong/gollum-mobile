@@ -7,6 +7,19 @@
     </h1>
   </div>
 
+{{#has_tags}}
+<div class="Box tag-cloud-section">
+  <div class="Box-header">
+    <span class="text-muted text-uppercase text-small">{{t.browse_by_tag}}</span>
+  </div>
+  <div class="tag-grid">
+    {{#tags}}
+    <span class="tag-pill" data-tag="{{tag}}">{{tag}} <span class="pill-count">{{count}}</span></span>
+    {{/tags}}
+  </div>
+</div>
+{{/has_tags}}
+
 {{#has_results}}
 
   {{>pagination}}
@@ -48,4 +61,42 @@
 
 </div>
 </div>
+
+{{#has_tags}}
+<script>
+// Tag pill toggle – adds/subtracts :tag: tokens from the search input
+(function() {
+  var selected = new Set();
+  var grid = document.querySelector('.tag-grid');
+  var input = document.getElementById('search-query');
+
+  if (!grid || !input) return;
+
+  grid.addEventListener('click', function(e) {
+    var pill = e.target.closest('.tag-pill');
+    if (!pill) return;
+    var tag = pill.getAttribute('data-tag');
+
+    if (selected.has(tag)) {
+      selected.delete(tag);
+      pill.classList.remove('selected');
+    } else {
+      selected.add(tag);
+      pill.classList.add('selected');
+    }
+
+    // Combine selected tags (as :tokens:) with any existing free-text
+    var raw = input.value;
+    var freeText = raw.replace(/:\S+?:/g, '').replace(/\s+/g, ' ').trim();
+    var tagPart = Array.from(selected).map(function(t) { return ':' + t + ':'; }).join(' ');
+    input.value = [tagPart, freeText].filter(Boolean).join(' ');
+
+    // Submit the form so search re-runs with the new query
+    if (input.value) {
+      input.form.submit();
+    }
+  });
+})();
+</script>
+{{/has_tags}}
 

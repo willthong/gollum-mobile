@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup 1 – Tag Cloud (Weighted)</title>
+<style>
+  :root {
+    --color-bg: #ffffff;
+    --color-border: #d0d7de;
+    --color-fg: #1f2328;
+    --color-muted: #656d76;
+    --color-accent: #0969da;
+    --color-accent-hover: #0550ae;
+    --color-tag-bg: #ddf4ff;
+    --color-tag-fg: #0969da;
+    --color-btn-bg: #f6f8fa;
+    --box-shadow: 0 1px 0 rgba(27,31,36,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--color-bg); color: var(--color-fg); line-height: 1.5; }
+
+  .page { max-width: 1012px; margin: 0 auto; padding: 24px; }
+
+  /* Search form – matches Gollum searchbar */
+  .search-form { margin-bottom: 16px; }
+  .search-input {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    outline: none;
+    line-height: 20px;
+  }
+  .search-input:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(9,105,218,0.15); }
+
+  /* Tag cloud section */
+  .tag-cloud-section {
+    background: var(--color-btn-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 20px 24px 16px;
+    margin-bottom: 24px;
+  }
+  .tag-cloud-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 14px;
+  }
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 12px;
+    line-height: 1.4;
+  }
+  .tag-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+    cursor: pointer;
+    color: var(--color-tag-fg);
+    text-decoration: none;
+    border-radius: 3px;
+    padding: 1px 4px;
+    margin: 0 -4px;
+    transition: background 0.15s;
+  }
+  .tag-item:hover { background: rgba(9,105,218,0.1); text-decoration: underline; }
+  .tag-item:active { background: rgba(9,105,218,0.18); }
+
+  /* Weight by size */
+  .tag-item.size-1 { font-size: 12px; opacity: 0.6; }
+  .tag-item.size-2 { font-size: 14px; opacity: 0.7; }
+  .tag-item.size-3 { font-size: 16px; opacity: 0.8; }
+  .tag-item.size-4 { font-size: 19px; opacity: 0.9; font-weight: 500; }
+  .tag-item.size-5 { font-size: 22px; opacity: 1.0; font-weight: 600; }
+
+  .tag-count {
+    font-size: 0.7em;
+    color: var(--color-muted);
+    font-weight: 400;
+  }
+
+  /* Active tag chips */
+  .active-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0 16px;
+    min-height: 0;
+  }
+  .active-tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--color-tag-bg);
+    color: var(--color-tag-fg);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(9,105,218,0.2);
+  }
+  .active-tag-chip .remove {
+    cursor: pointer;
+    font-weight: 700;
+    margin-left: 2px;
+    opacity: 0.7;
+  }
+  .active-tag-chip .remove:hover { opacity: 1; }
+
+  /* Results area */
+  .results-section { display: none; }
+  .results-section.has-results { display: block; }
+
+  .result-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .result-item:last-child { border-bottom: none; }
+  .result-name { font-weight: 600; color: var(--color-accent); }
+  .result-context { font-size: 13px; color: var(--color-muted); margin-top: 2px; }
+
+  .empty-state { color: var(--color-muted); text-align: center; padding: 32px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Search form -->
+  <form class="search-form" onsubmit="return false">
+    <input type="text" class="search-input" id="search-query"
+           placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+  </form>
+
+  <!-- Active filter chips -->
+  <div class="active-tags" id="active-tags"></div>
+
+  <!-- Tag Cloud -->
+  <div class="tag-cloud-section">
+    <div class="tag-cloud-header">Browse by tag</div>
+    <div class="tag-cloud" id="tag-cloud">
+      <span class="tag-item size-5" data-tag="rust">rust <span class="tag-count">42</span></span>
+      <span class="tag-item size-5" data-tag="api">api <span class="tag-count">37</span></span>
+      <span class="tag-item size-4" data-tag="deployment">deployment <span class="tag-count">29</span></span>
+      <span class="tag-item size-4" data-tag="database">database <span class="tag-count">27</span></span>
+      <span class="tag-item size-4" data-tag="frontend">frontend <span class="tag-count">25</span></span>
+      <span class="tag-item size-3" data-tag="testing">testing <span class="tag-count">21</span></span>
+      <span class="tag-item size-3" data-tag="cli">cli <span class="tag-count">19</span></span>
+      <span class="tag-item size-3" data-tag="performance">performance <span class="tag-count">18</span></span>
+      <span class="tag-item size-3" data-tag="security">security <span class="tag-count">16</span></span>
+      <span class="tag-item size-3" data-tag="docker">docker <span class="tag-count">15</span></span>
+      <span class="tag-item size-2" data-tag="graphql">graphql <span class="tag-count">14</span></span>
+      <span class="tag-item size-2" data-tag="authentication">authentication <span class="tag-count">13</span></span>
+      <span class="tag-item size-2" data-tag="postgres">postgres <span class="tag-count">12</span></span>
+      <span class="tag-item size-2" data-tag="logging">logging <span class="tag-count">11</span></span>
+      <span class="tag-item size-2" data-tag="ci-cd">ci-cd <span class="tag-count">10</span></span>
+      <span class="tag-item size-1" data-tag="webpack">webpack <span class="tag-count">8</span></span>
+      <span class="tag-item size-1" data-tag="redis">redis <span class="tag-count">8</span></span>
+      <span class="tag-item size-1" data-tag="k8s">k8s <span class="tag-count">7</span></span>
+      <span class="tag-item size-1" data-tag="monitoring">monitoring <span class="tag-count">6</span></span>
+      <span class="tag-item size-1" data-tag="migration">migration <span class="tag-count">5</span></span>
+    </div>
+  </div>
+
+  <!-- Search results (hidden until search) -->
+  <div class="results-section" id="results-section">
+    <p class="empty-state">Type a query or click a tag to see results.</p>
+  </div>
+
+</div>
+
+<script>
+  const activeTags = new Set();
+  const chipsEl = document.getElementById('active-tags');
+  const resultsEl = document.getElementById('results-section');
+
+  function renderChips() {
+    chipsEl.innerHTML = '';
+    activeTags.forEach(tag => {
+      const chip = document.createElement('span');
+      chip.className = 'active-tag-chip';
+      chip.innerHTML = `${tag} <span class="remove" data-tag="${tag}">&times;</span>`;
+      chipsEl.appendChild(chip);
+    });
+    // Update search input placeholder
+    const input = document.getElementById('search-query');
+    input.value = [...activeTags].map(t => `:${t}:`).join(' ');
+    resultsEl.classList.toggle('has-results', activeTags.size > 0);
+    if (activeTags.size > 0) {
+      resultsEl.innerHTML = `
+        <div class="result-item">
+          <div class="result-name">Searching for: ${[...activeTags].join(', ')}</div>
+          <div class="result-context">Showing pages tagged with these terms…</div>
+        </div>`;
+    }
+  }
+
+  document.getElementById('tag-cloud').addEventListener('click', e => {
+    const tagItem = e.target.closest('.tag-item');
+    if (!tagItem) return;
+    const tag = tagItem.dataset.tag;
+    activeTags.add(tag);
+    renderChips();
+  });
+
+  chipsEl.addEventListener('click', e => {
+    const removeBtn = e.target.closest('.remove');
+    if (!removeBtn) return;
+    const tag = removeBtn.dataset.tag;
+    activeTags.delete(tag);
+    renderChips();
+    if (activeTags.size === 0) {
+      resultsEl.classList.remove('has-results');
+      resultsEl.innerHTML = '<p class="empty-state">Type a query or click a tag to see results.</p>';
+      document.getElementById('search-query').value = '';
+    }
+  });
+</script>
+</body>
+</html>

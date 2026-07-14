@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup 3 – Tag Pills (Toggle Grid)</title>
+<style>
+  :root {
+    --color-bg: #ffffff;
+    --color-border: #d0d7de;
+    --color-fg: #1f2328;
+    --color-muted: #656d76;
+    --color-accent: #0969da;
+    --color-tag-bg: #ddf4ff;
+    --color-tag-fg: #0969da;
+    --color-tag-selected-bg: #0969da;
+    --color-tag-selected-fg: #ffffff;
+    --color-btn-bg: #f6f8fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--color-bg); color: var(--color-fg); line-height: 1.5; }
+
+  .page { max-width: 1012px; margin: 0 auto; padding: 24px; }
+
+  .search-form { margin-bottom: 16px; }
+  .search-input {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    outline: none;
+    line-height: 20px;
+  }
+  .search-input:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(9,105,218,0.15); }
+
+  .tag-grid-section {
+    margin-bottom: 24px;
+  }
+  .tag-grid-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 10px;
+  }
+
+  .tag-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    background: var(--color-tag-bg);
+    color: var(--color-tag-fg);
+    border: 1px solid rgba(9,105,218,0.2);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .tag-pill:hover:not(.selected) {
+    background: #cae8ff;
+    border-color: rgba(9,105,218,0.35);
+  }
+  .tag-pill.selected {
+    background: var(--color-tag-selected-bg);
+    color: var(--color-tag-selected-fg);
+    border-color: var(--color-tag-selected-bg);
+  }
+  .tag-pill.selected:hover {
+    background: #0550ae;
+  }
+
+  .tag-pill .pill-count {
+    font-size: 0.78em;
+    opacity: 0.7;
+    font-weight: 400;
+    background: rgba(0,0,0,0.08);
+    padding: 1px 6px;
+    border-radius: 999px;
+    min-width: 20px;
+    text-align: center;
+  }
+  .tag-pill.selected .pill-count {
+    background: rgba(255,255,255,0.2);
+  }
+
+  .filter-search {
+    margin-bottom: 12px;
+  }
+  .filter-input {
+    width: 100%;
+    max-width: 260px;
+    padding: 5px 10px;
+    font-size: 13px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    outline: none;
+  }
+  .filter-input:focus { border-color: var(--color-accent); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <form class="search-form" onsubmit="return false">
+    <input type="text" class="search-input" id="search-query"
+           placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+  </form>
+
+  <div class="tag-grid-section">
+    <div class="tag-grid-header">Browse by tag</div>
+
+    <div class="filter-search">
+      <input type="text" class="filter-input" id="tag-filter" placeholder="Filter tags…" autocomplete="off">
+    </div>
+
+    <div class="tag-grid" id="tag-grid">
+      <span class="tag-pill" data-tag="rust">rust <span class="pill-count">42</span></span>
+      <span class="tag-pill" data-tag="api">api <span class="pill-count">37</span></span>
+      <span class="tag-pill" data-tag="deployment">deployment <span class="pill-count">29</span></span>
+      <span class="tag-pill" data-tag="database">database <span class="pill-count">27</span></span>
+      <span class="tag-pill" data-tag="frontend">frontend <span class="pill-count">25</span></span>
+      <span class="tag-pill" data-tag="testing">testing <span class="pill-count">21</span></span>
+      <span class="tag-pill" data-tag="cli">cli <span class="pill-count">19</span></span>
+      <span class="tag-pill" data-tag="performance">performance <span class="pill-count">18</span></span>
+      <span class="tag-pill" data-tag="security">security <span class="pill-count">16</span></span>
+      <span class="tag-pill" data-tag="docker">docker <span class="pill-count">15</span></span>
+      <span class="tag-pill" data-tag="graphql">graphql <span class="pill-count">14</span></span>
+      <span class="tag-pill" data-tag="authentication">authentication <span class="pill-count">13</span></span>
+      <span class="tag-pill" data-tag="postgres">postgres <span class="pill-count">12</span></span>
+      <span class="tag-pill" data-tag="logging">logging <span class="pill-count">11</span></span>
+      <span class="tag-pill" data-tag="ci-cd">ci-cd <span class="pill-count">10</span></span>
+      <span class="tag-pill" data-tag="webpack">webpack <span class="pill-count">8</span></span>
+      <span class="tag-pill" data-tag="redis">redis <span class="pill-count">8</span></span>
+      <span class="tag-pill" data-tag="k8s">k8s <span class="pill-count">7</span></span>
+      <span class="tag-pill" data-tag="monitoring">monitoring <span class="pill-count">6</span></span>
+      <span class="tag-pill" data-tag="migration">migration <span class="pill-count">5</span></span>
+      <span class="tag-pill" data-tag="oauth">oauth <span class="pill-count">4</span></span>
+      <span class="tag-pill" data-tag="websocket">websocket <span class="pill-count">4</span></span>
+      <span class="tag-pill" data-tag="s3">s3 <span class="pill-count">3</span></span>
+      <span class="tag-pill" data-tag="rate-limiting">rate-limiting <span class="pill-count">3</span></span>
+      <span class="tag-pill" data-tag="i18n">i18n <span class="pill-count">2</span></span>
+      <span class="tag-pill" data-tag="cors">cors <span class="pill-count">2</span></span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const selectedTags = new Set();
+
+  document.getElementById('tag-grid').addEventListener('click', e => {
+    const pill = e.target.closest('.tag-pill');
+    if (!pill) return;
+    const tag = pill.dataset.tag;
+
+    if (selectedTags.has(tag)) {
+      selectedTags.delete(tag);
+      pill.classList.remove('selected');
+    } else {
+      selectedTags.add(tag);
+      pill.classList.add('selected');
+    }
+
+    // Combine selected tags with any free text already in the input
+    const freeText = getFreeText();
+    const tagPart = [...selectedTags].map(t => `:${t}:`).join(' ');
+    const combined = [tagPart, freeText].filter(Boolean).join(' ');
+    document.getElementById('search-query').value = combined;
+  });
+
+  // Filter pills by text
+  document.getElementById('tag-filter').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#tag-grid .tag-pill').forEach(pill => {
+      pill.style.display = pill.dataset.tag.includes(q) ? '' : 'none';
+    });
+  });
+
+  // Extract free-text portion of the search input (everything that isn't a :tag:)
+  function getFreeText() {
+    const val = document.getElementById('search-query').value;
+    return val.replace(/:[^\s:]+:/g, '').replace(/\s+/g, ' ').trim();
+  }
+</script>
+</body>
+</html>

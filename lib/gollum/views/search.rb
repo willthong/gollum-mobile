@@ -42,6 +42,15 @@ module Precious
         @results.empty?
       end
 
+      def tags
+        return [] unless @tags && !@tags.empty?
+        @tags.map { |tag, count| { tag: tag, count: count } }
+      end
+
+      def has_tags
+        @tags && !@tags.empty?
+      end
+
     end
   end
 end

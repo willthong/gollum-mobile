@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup 2 – Tag List (Tabular, Sortable)</title>
+<style>
+  :root {
+    --color-bg: #ffffff;
+    --color-border: #d0d7de;
+    --color-fg: #1f2328;
+    --color-muted: #656d76;
+    --color-accent: #0969da;
+    --color-accent-hover: #0550ae;
+    --color-tag-bg: #ddf4ff;
+    --color-tag-fg: #0969da;
+    --color-btn-bg: #f6f8fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--color-bg); color: var(--color-fg); line-height: 1.5; }
+
+  .page { max-width: 1012px; margin: 0 auto; padding: 24px; }
+
+  .search-form { margin-bottom: 16px; }
+  .search-input {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    outline: none;
+    line-height: 20px;
+  }
+  .search-input:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(9,105,218,0.15); }
+
+  /* Active tag chips */
+  .active-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0 16px;
+  }
+  .active-tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--color-tag-bg);
+    color: var(--color-tag-fg);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(9,105,218,0.2);
+  }
+  .active-tag-chip .remove {
+    cursor: pointer;
+    font-weight: 700;
+    margin-left: 2px;
+    opacity: 0.7;
+  }
+  .active-tag-chip .remove:hover { opacity: 1; }
+
+  /* Tag list section */
+  .tag-list-section {
+    background: var(--color-btn-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .tag-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-btn-bg);
+  }
+  .tag-list-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .tag-list-count {
+    font-size: 12px;
+    color: var(--color-muted);
+  }
+  .tag-list-sort {
+    font-size: 12px;
+    color: var(--color-muted);
+    cursor: pointer;
+    user-select: none;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+  }
+  .tag-list-sort:hover { background: #eaeef2; }
+
+  .tag-table {
+    width: 100%;
+    font-size: 14px;
+  }
+  .tag-table tr {
+    border-bottom: 1px solid var(--color-border);
+  }
+  .tag-table tr:last-child { border-bottom: none; }
+  .tag-table td {
+    padding: 8px 16px;
+    vertical-align: middle;
+  }
+  .tag-table tr:hover { background: rgba(9,105,218,0.04); }
+  .tag-name {
+    cursor: pointer;
+    color: var(--color-accent);
+    font-weight: 500;
+    width: 60%;
+  }
+  .tag-name:hover { text-decoration: underline; }
+  .tag-freq {
+    color: var(--color-fg);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    width: 15%;
+  }
+  .tag-bar-cell {
+    width: 25%;
+  }
+  .tag-bar-bg {
+    height: 6px;
+    background: #ddf4ff;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .tag-bar-fill {
+    height: 100%;
+    background: var(--color-accent);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  /* Results area */
+  .results-section { display: none; }
+  .results-section.has-results { display: block; }
+  .result-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .result-name { font-weight: 600; color: var(--color-accent); }
+  .result-context { font-size: 13px; color: var(--color-muted); margin-top: 2px; }
+  .empty-state { color: var(--color-muted); text-align: center; padding: 32px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <form class="search-form" onsubmit="return false">
+    <input type="text" class="search-input" id="search-query"
+           placeholder="Search the wiki…" aria-label="Search" autocomplete="off">
+  </form>
+
+  <div class="active-tags" id="active-tags"></div>
+
+  <div class="tag-list-section">
+    <div class="tag-list-header">
+      <div>
+        <span class="tag-list-title">Tags</span>
+        <span class="tag-list-count" id="tag-count">20 tags across 183 pages</span>
+      </div>
+      <button class="tag-list-sort" id="sort-btn" title="Toggle sort: frequency / alphabetical">
+        Sort: ▼ Frequency
+      </button>
+    </div>
+    <table class="tag-table" id="tag-table">
+      <tbody>
+        <tr>
+          <td class="tag-name" data-tag="rust">rust</td>
+          <td class="tag-freq">42</td>
+          <td class="tag-bar-cell"><div class="tag-bar-bg"><div class="tag-bar-fill" style="width:100%"></div></div></td>
+        </tr>
+        <tr>
+          <td class="tag-name" data-tag="api">api</td>
+          <td class="tag-freq">37</td>
+          <td class="tag-bar-cell"><div class="tag-bar-bg"><div class="tag-bar-fill" style="width:88%"></div></div></td>
+        </tr>
+        <tr>
+          <td class="tag-name" data-tag="deployment">deployment</td>
+          <td class="tag-freq">29</td>
+          <td class="tag-bar-cell"><div class="tag-bar-bg"><div class="tag-bar-fill" style="width:69%"></div></div></td>
+        </tr>
+        <tr>
+          <td class="tag-name" data-tag="database">database</td>
+          <td class="tag-freq">27</td>
+          <td class="tag-bar-cell"><div class="tag-bar-bg"><div class="tag-bar-fill" style="width:64%"></div></div></td>
+        </tr>
+        <tr>
+          <td class="tag-name" data-tag="frontend">frontend</td>
+          <td class="tag-freq">25</td>
+          <td class="tag-bar-cell"><div class="tag-bar-bg"><div class="tag-bar-fill" style="width:60%"></div></div></td>
+        </tr>
+        <tr>
+          <td class="tag-name" data-tag="testing">testing</td>
+          <td class="tag-freq">21</td>
+          <td class="tag-bar-cell"><div class="tag-bar-bg"><div class="tag-bar-fill" style="width:50%"></div></div></td>
+        </tr>
+        <tr>
+          <td class="tag-name" data-tag="cli">cli</td>
+          <td class="tag-freq">19</td>
+          <td class="tag-bar-cell"><div class="tag-bar-bg"><div class="tag-bar-fill" style="width:45%"></div></div></td>
+        </tr>
+        <tr>
+          <td class="tag-name" data-tag="performance">performance</td>
+          <td class="tag-freq">18</td>
+          <td class="tag-bar-cell"><div class="tag-bar-bg"><div class="tag-bar-fill" style="width:43%"></div></div></td>
+        </tr>
+        <tr>
+          <td class="tag-name" data-tag="security">security</td>
+          <td class="tag-freq">16</td>
+          <td class="tag-bar-cell"><div class="tag-bar-bg"><div class="tag-bar-fill" style="width:38%"></div></div></td>
+        </tr>
+        <tr>
+          <td class="tag-name" data-tag="docker">docker</td>
+          <td class="tag-freq">15</td>
+          <td class="tag-bar-cell"><div class="tag-bar-bg"><div class="tag-bar-fill" style="width:36%"></div></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="results-section" id="results-section">
+    <p class="empty-state">Type a query or click a tag to see results.</p>
+  </div>
+
+</div>
+
+<script>
+  const activeTags = new Set();
+  const chipsEl = document.getElementById('active-tags');
+  const resultsEl = document.getElementById('results-section');
+
+  function renderChips() {
+    chipsEl.innerHTML = '';
+    activeTags.forEach(tag => {
+      const chip = document.createElement('span');
+      chip.className = 'active-tag-chip';
+      chip.innerHTML = `${tag} <span class="remove" data-tag="${tag}">&times;</span>`;
+      chipsEl.appendChild(chip);
+    });
+    document.getElementById('search-query').value = [...activeTags].map(t => `:${t}:`).join(' ');
+    resultsEl.classList.toggle('has-results', activeTags.size > 0);
+    if (activeTags.size > 0) {
+      resultsEl.innerHTML = `<div class="result-item"><div class="result-name">Filtered by: ${[...activeTags].join(', ')}</div><div class="result-context">Showing pages tagged with these terms…</div></div>`;
+    }
+  }
+
+  document.getElementById('tag-table').addEventListener('click', e => {
+    const tagCell = e.target.closest('.tag-name');
+    if (!tagCell) return;
+    activeTags.add(tagCell.dataset.tag);
+    renderChips();
+  });
+
+  chipsEl.addEventListener('click', e => {
+    const removeBtn = e.target.closest('.remove');
+    if (!removeBtn) return;
+    activeTags.delete(removeBtn.dataset.tag);
+    renderChips();
+    if (activeTags.size === 0) {
+      resultsEl.classList.remove('has-results');
+      resultsEl.innerHTML = '<p class="empty-state">Type a query or click a tag to see results.</p>';
+      document.getElementById('search-query').value = '';
+    }
+  });
+
+  // Sort toggle
+  let sortAlpha = false;
+  document.getElementById('sort-btn').addEventListener('click', function() {
+    sortAlpha = !sortAlpha;
+    this.textContent = sortAlpha ? 'Sort: ▼ Alpha' : 'Sort: ▼ Frequency';
+    const rows = [...document.querySelectorAll('#tag-table tbody tr')];
+    rows.sort((a, b) => {
+      if (sortAlpha) {
+        return a.querySelector('.tag-name').textContent.localeCompare(
+               b.querySelector('.tag-name').textContent);
+      }
+      return parseInt(b.querySelector('.tag-freq').textContent) -
+             parseInt(a.querySelector('.tag-freq').textContent);
+    });
+    const tbody = document.getElementById('tag-table').querySelector('tbody');
+    rows.forEach(r => tbody.appendChild(r));
+  });
+</script>
+</body>
+</html>
