@@ -99,9 +99,9 @@ context "TagIndex" do
   test "save writes to .gollum/tags.json inside the repo" do
     data = { "foo" => 1 }
     Gollum::TagIndex.save(@wiki, data)
-    repo_path = @wiki.repo.path
-    tag_file  = File.join(repo_path, '.gollum', 'tags.json')
-    assert File.exist?(tag_file), "tags.json should exist"
+    tag_file  = Gollum::TagIndex.tag_path(@wiki)
+    assert tag_file, "tag_path should return a path"
+    assert File.exist?(tag_file), "tags.json should exist at #{tag_file}"
     parsed = JSON.parse(File.read(tag_file))
     assert_equal data, parsed
   end

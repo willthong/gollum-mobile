@@ -21,7 +21,10 @@ module Gollum
 
     # Extract tags from a single page's raw text.
     # Returns a Hash of  tag_name(string) => count(Integer).
+    # +text+ may be nil or a String.
     def self.extract_tags(text)
+      return {} unless text.is_a?(::String)
+
       counts = Hash.new(0)
       text.scan(TAG_RE) do |match|
         tag = match.first.downcase
@@ -38,8 +41,11 @@ module Gollum
     # Returns a Hash of  tag_name => total_count.
     def self.scan_wiki(wiki)
       total = Hash.new(0)
-      wiki.pages.each do |page|
-        extract_tags(page.raw_data).each { |tag, count| total[tag] += count }
+      pages = wiki.pages rescue []
+      pages.each do |page|
+        raw = page.raw_data rescue nil
+        next unless raw
+        extract_tags(raw).each { |tag, count| total[tag] += count }
       end
       total
     end
@@ -49,24 +55,30 @@ module Gollum
     # -------------------------------------------------------------------
 
     # Absolute path to the tag file inside the wiki repository.
+    # Uses wiki.path (the filesystem root) rather than wiki.repo.path
+    # (which points at .git/ or equivalent).
     def self.tag_path(wiki)
-      repo_path = wiki.repo.path
-      ::File.join(repo_path, TAG_FILE)
+      repo_root = wiki.path rescue nil
+      return nil unless repo_root
+      ::File.join(repo_root, TAG_FILE)
     end
 
     # Load tag data from disk.  Returns a Hash (empty if file doesn't exist).
     def self.load(wiki)
       path = tag_path(wiki)
-      return {} unless ::File.exist?(path)
+      return {} unless path && ::File.exist?(path)
       ::JSON.parse(::File.read(path))
     rescue ::JSON::ParserError
       {}
     end
 
-    # Persist tag data to disk.
+    # Persist tag data to disk.  Silently no-ops if the wiki path
+    # is unavailable (e.g., bare repo without a writable working tree).
     def self.save(wiki, data)
       path = tag_path(wiki)
-      dir  = ::File.dirname(path)
+      return unless path
+
+      dir = ::File.dirname(path)
       ::FileUtils.mkdir_p(dir)
       ::File.write(path, ::JSON.generate(data))
     end
@@ -74,14 +86,18 @@ module Gollum
     # Remove the tag file entirely.
     def self.reset!(wiki)
       path = tag_path(wiki)
-      ::FileUtils.rm_f(path)
+      ::FileUtils.rm_f(path) if path
     end
 
     # Scan the entire wiki and persist the result.
+    # Returns the tag data hash on success, or an empty hash on failure.
     def self.reindex!(wiki)
       data = scan_wiki(wiki)
       save(wiki, data)
       data
+    rescue => err
+      $stderr.puts "[gollum tag_index] reindex! failed: #{err.class}: #{err.message}"
+      {}
     end
 
     # -------------------------------------------------------------------
