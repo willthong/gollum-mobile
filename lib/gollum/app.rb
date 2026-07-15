@@ -320,7 +320,11 @@ module Precious
         commit    = { :committer => committer }
 
         success = wiki.rename_page(page, rename, commit)
-        Gollum::TagIndex.reindex!(wiki)
+        begin
+          Gollum::TagIndex.reindex!(wiki)
+        rescue => err
+          $stderr.puts "[gollum] reindex failed after rename: #{err.class}: #{err.message}"
+        end
         if !success
           # This occurs on NOOPs, for example renaming A => A
           redirect to("/#{page.escaped_url_path}")
@@ -360,9 +364,14 @@ module Precious
         update_wiki_page(wiki, page.footer, params[:footer], commit) if params[:footer]
         update_wiki_page(wiki, page.sidebar, params[:sidebar], commit) if params[:sidebar]
         committer.commit
-        Gollum::TagIndex.reindex!(wiki)
         rescue Gollum::DuplicatePageError
           halt 409, "You are trying to save this page under a path (#{page.escaped_url_path}) that already exists." # Signal conflict
+        end
+
+        begin
+          Gollum::TagIndex.reindex!(wiki)
+        rescue => err
+          $stderr.puts "[gollum] reindex failed after edit: #{err.class}: #{err.message}"
         end
       end
 
@@ -374,7 +383,11 @@ module Precious
           commit           = commit_options
           commit[:message] = "Deleted #{filepath}"
           wiki.delete_file(filepath, commit)
-          Gollum::TagIndex.reindex!(wiki)
+          begin
+            Gollum::TagIndex.reindex!(wiki)
+          rescue => err
+            $stderr.puts "[gollum] reindex failed after delete: #{err.class}: #{err.message}"
+          end
         end
       end
 
@@ -410,7 +423,11 @@ module Precious
 
         begin
           wiki.write_page(::File.join(path, name), format, params[:content], commit_options)
-          Gollum::TagIndex.reindex!(wiki)
+          begin
+            Gollum::TagIndex.reindex!(wiki)
+          rescue => err
+            $stderr.puts "[gollum] reindex failed after create: #{err.class}: #{err.message}"
+          end
 
           redirect to("/#{clean_url(::File.join(encodeURIComponent(path), encodeURIComponent(wiki.page_file_name(name, format))))}")
         rescue Gollum::DuplicatePageError, Gollum::IllegalDirectoryPath => e
@@ -431,7 +448,11 @@ module Precious
         commit           = commit_options
         commit[:message] = "Revert commit #{sha2.chars.take(7).join}"
         if wiki.revert_page(@page, sha1, sha2, commit)
-          Gollum::TagIndex.reindex!(wiki)
+          begin
+            Gollum::TagIndex.reindex!(wiki)
+          rescue => err
+            $stderr.puts "[gollum] reindex failed after revert: #{err.class}: #{err.message}"
+          end
           redirect to("/#{@page.escaped_url_path}")
         else
           sha2, sha1 = sha1, "#{sha1}^" if !sha2
