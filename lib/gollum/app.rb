@@ -373,6 +373,7 @@ module Precious
         rescue => err
           $stderr.puts "[gollum] reindex failed after edit: #{err.class}: #{err.message}"
         end
+        nil
       end
 
       post '/delete/*' do
@@ -388,6 +389,7 @@ module Precious
           rescue => err
             $stderr.puts "[gollum] reindex failed after delete: #{err.class}: #{err.message}"
           end
+          nil
         end
       end
 
