@@ -13,7 +13,7 @@ module Gollum
     TAG_RE = /:([a-zA-Z0-9][a-zA-Z0-9_-]*):/
 
     # File path relative to the repository root.
-    TAG_FILE = File.join('.gollum', 'tags.json').freeze
+    TAG_FILE = ::File.join('.gollum', 'tags.json').freeze
 
     # -------------------------------------------------------------------
     # Extraction
@@ -51,30 +51,30 @@ module Gollum
     # Absolute path to the tag file inside the wiki repository.
     def self.tag_path(wiki)
       repo_path = wiki.repo.path
-      File.join(repo_path, TAG_FILE)
+      ::File.join(repo_path, TAG_FILE)
     end
 
     # Load tag data from disk.  Returns a Hash (empty if file doesn't exist).
     def self.load(wiki)
       path = tag_path(wiki)
-      return {} unless File.exist?(path)
-      JSON.parse(File.read(path))
-    rescue JSON::ParserError
+      return {} unless ::File.exist?(path)
+      ::JSON.parse(::File.read(path))
+    rescue ::JSON::ParserError
       {}
     end
 
     # Persist tag data to disk.
     def self.save(wiki, data)
       path = tag_path(wiki)
-      dir  = File.dirname(path)
-      FileUtils.mkdir_p(dir)
-      File.write(path, JSON.generate(data))
+      dir  = ::File.dirname(path)
+      ::FileUtils.mkdir_p(dir)
+      ::File.write(path, ::JSON.generate(data))
     end
 
     # Remove the tag file entirely.
     def self.reset!(wiki)
       path = tag_path(wiki)
-      FileUtils.rm_f(path)
+      ::FileUtils.rm_f(path)
     end
 
     # Scan the entire wiki and persist the result.
