@@ -10,7 +10,7 @@ module Gollum
   # Matched at colon boundaries only.  Case-insensitive (lowercased internally).
   module TagIndex
 
-    TAG_RE = /:([a-zA-Z0-9][a-zA-Z0-9_-]*):/
+    TAG_RE = /:([a-zA-Z][a-zA-Z0-9_-]*):/
 
     # File path relative to the repository root.
     TAG_FILE = ::File.join('.gollum', 'tags.json').freeze
@@ -19,14 +19,23 @@ module Gollum
     # Extraction
     # -------------------------------------------------------------------
 
+    # Pattern for MAC addresses: :xx:xx:xx:xx:xx:xx:
+    # (6 groups of 2 hex digits, colon-separated, bracketed by colons)
+    MAC_RE = /:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:/i
+
     # Extract tags from a single page's raw text.
     # Returns a Hash of  tag_name(string) => count(Integer).
     # +text+ may be nil or a String.
+    # MAC addresses (e.g. :aa:bb:cc:dd:ee:ff:) are stripped first
+    # so their hex pairs are never counted as tags.
     def self.extract_tags(text)
       return {} unless text.is_a?(::String)
 
+      # Remove MAC addresses before tag scanning
+      clean = text.gsub(MAC_RE, '')
+
       counts = Hash.new(0)
-      text.scan(TAG_RE) do |match|
+      clean.scan(TAG_RE) do |match|
         tag = match.first.downcase
         counts[tag] += 1 unless tag.empty?
       end

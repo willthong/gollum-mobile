@@ -56,6 +56,28 @@ context "TagIndex" do
     assert_equal({ "hello_world" => 1 }, result)
   end
 
+  test "extract_tags excludes MAC addresses" do
+    # MAC like :aa:bb:cc:dd:ee:ff: should not extract any tags
+    result = Gollum::TagIndex.extract_tags("Device MAC is :aa:bb:cc:dd:ee:ff:")
+    assert_equal({}, result, "Should not extract tags from MAC addresses")
+  end
+
+  test "extract_tags excludes MAC addresses with uppercase hex" do
+    result = Gollum::TagIndex.extract_tags("MAC :AA:BB:CC:DD:EE:FF: is valid")
+    assert_equal({}, result, "Should not extract tags from uppercase MAC")
+  end
+
+  test "extract_tags excludes MAC addresses mixed with real tags" do
+    content = ":rust: on MAC :aa:bb:cc:dd:ee:ff: is :api:"
+    result = Gollum::TagIndex.extract_tags(content)
+    assert_equal({ "rust" => 1, "api" => 1 }, result, "Should extract real tags but not MAC parts")
+  end
+
+  test "extract_tags still accepts alphanumeric tags starting with a letter" do
+    result = Gollum::TagIndex.extract_tags(":node-js: and :v2-api: work")
+    assert_equal({ "node-js" => 1, "v2-api" => 1 }, result)
+  end
+
   # ── scanning the wiki ───────────────────────────────────────────────
 
   test "scan_wiki extracts tags from all pages" do

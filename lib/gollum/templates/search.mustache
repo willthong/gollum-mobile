@@ -63,6 +63,27 @@
 </div>
 
 {{#has_tags}}
+<style>
+.tag-cloud-section { margin-bottom: 16px; }
+.tag-grid { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px; }
+.tag-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 13px; font-weight: 500; cursor: pointer; user-select: none;
+  background: #ddf4ff; color: #0969da;
+  border: 1px solid rgba(9,105,218,0.2);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.tag-pill:hover:not(.selected) { background: #cae8ff; border-color: rgba(9,105,218,0.35); }
+.tag-pill.selected { background: #0969da; color: #fff; border-color: #0969da; }
+.tag-pill.selected:hover { background: #0550ae; }
+.pill-count {
+  font-size: 0.78em; opacity: 0.7; font-weight: 400;
+  background: rgba(0,0,0,0.08); padding: 1px 6px; border-radius: 999px;
+  min-width: 18px; text-align: center;
+}
+.tag-pill.selected .pill-count { background: rgba(255,255,255,0.2); }
+</style>
 <script>
 // Tag pill toggle – adds/subtracts :tag: tokens from the search input
 (function() {
@@ -90,11 +111,6 @@
     var freeText = raw.replace(/:\S+?:/g, '').replace(/\s+/g, ' ').trim();
     var tagPart = Array.from(selected).map(function(t) { return ':' + t + ':'; }).join(' ');
     input.value = [tagPart, freeText].filter(Boolean).join(' ');
-
-    // Submit the form so search re-runs with the new query
-    if (input.value) {
-      input.form.submit();
-    }
   });
 })();
 </script>
