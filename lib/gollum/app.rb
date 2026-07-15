@@ -365,6 +365,8 @@ module Precious
           halt 409, "You are trying to save this page under a path (#{page.escaped_url_path}) that already exists." # Signal conflict
         end
 
+        content_type :json
+        { saved: true }.to_json
       end
 
       post '/delete/*' do
