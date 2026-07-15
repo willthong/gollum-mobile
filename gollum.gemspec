@@ -71,6 +71,7 @@ Gem::Specification.new do |s|
     lib/gollum/app.rb
     lib/gollum/assets.rb
     lib/gollum/helpers.rb
+    lib/gollum/tag_index.rb
     lib/gollum/locales/cn.yml
     lib/gollum/locales/en.yml
     lib/gollum/public/gollum/javascript/HOWTO_UPDATE_MATHJAX.md
@@ -206,6 +207,7 @@ Gem::Specification.new do |s|
     lib/gollum/public/gollum/stylesheets/_breakpoint.scss
     lib/gollum/public/gollum/stylesheets/_features.scss
     lib/gollum/public/gollum/stylesheets/_spinners.scss
+    lib/gollum/public/gollum/stylesheets/_tags.scss
     lib/gollum/public/gollum/stylesheets/app.scss
     lib/gollum/public/gollum/stylesheets/criticmarkup.scss
     lib/gollum/public/gollum/stylesheets/dialog.scss
