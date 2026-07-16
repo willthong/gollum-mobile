@@ -19,9 +19,11 @@ module Gollum
     # Extraction
     # -------------------------------------------------------------------
 
-    # Pattern for MAC addresses: :xx:xx:xx:xx:xx:xx:
-    # (6 groups of 2 hex digits, colon-separated, bracketed by colons)
-    MAC_RE = /:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:/i
+    # Pattern for MAC addresses: xx:xx:xx:xx:xx:xx
+    # (6 groups of 2 hex digits, colon-separated, may appear with or
+    #  without surrounding colons — e.g. :aa:bb:cc:dd:ee:ff: or
+    #  (2C:F0:5D:74:09:65) or bare 2C:F0:5D:74:09:65)
+    MAC_RE = /[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}/
 
     # Extract tags from a single page's raw text.
     # Returns a Hash of  tag_name(string) => count(Integer).

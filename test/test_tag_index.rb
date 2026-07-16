@@ -73,6 +73,19 @@ context "TagIndex" do
     assert_equal({ "rust" => 1, "api" => 1 }, result, "Should extract real tags but not MAC parts")
   end
 
+  test "extract_tags excludes bare MAC without surrounding colons" do
+    # MAC as (2C:F0:5D:74:09:65): — no leading/trailing colons around the full MAC
+    content = "ResistanceIsCharacterForming (2C:F0:5D:74:09:65): 192.168.0.58/24"
+    result = Gollum::TagIndex.extract_tags(content)
+    assert_equal({}, result, "Should not extract any tags from bare MAC")
+  end
+
+  test "extract_tags excludes bare MAC with real tags nearby" do
+    content = ":rust: device (2C:F0:5D:74:09:65) is :api:"
+    result = Gollum::TagIndex.extract_tags(content)
+    assert_equal({ "rust" => 1, "api" => 1 }, result, "Should extract real tags, not bare MAC parts")
+  end
+
   test "extract_tags still accepts alphanumeric tags starting with a letter" do
     result = Gollum::TagIndex.extract_tags(":node-js: and :v2-api: work")
     assert_equal({ "node-js" => 1, "v2-api" => 1 }, result)
