@@ -20,92 +20,102 @@ context "TagIndex" do
     assert_equal({}, result)
   end
 
-  test "extract_tags parses :colon-delimited: tags" do
+  test "extract_tags parses colon-delimited tag line" do
+    # A tag line starts and ends with a colon
     content = <<~MD
       # My Page
 
-      This page is about :rust: and :api:.
+      This page has some tags on a dedicated line.
 
-      Also touches on :deployment: and :rust: again.
+      :rust:api:deployment:
+    MD
+    result = Gollum::TagIndex.extract_tags(content)
+    assert_equal({ "rust" => 1, "api" => 1, "deployment" => 1 }, result)
+  end
+
+  test "extract_tags counts multiple occurrences across lines" do
+    content = <<~MD
+      :rust:api:
+      :rust:deployment:
     MD
     result = Gollum::TagIndex.extract_tags(content)
     assert_equal({ "rust" => 2, "api" => 1, "deployment" => 1 }, result)
   end
 
   test "extract_tags is case-insensitive" do
-    content = ":Rust: is great. So is :rust:."
+    content = ":Rust:rust:"
     result = Gollum::TagIndex.extract_tags(content)
     assert_equal({ "rust" => 2 }, result)
   end
 
   test "extract_tags handles multi-word hyphenated tags" do
-    content = ":rate-limiting: and :ci-cd: are :rate-limiting:."
+    content = ":rate-limiting:ci-cd:"
     result = Gollum::TagIndex.extract_tags(content)
-    assert_equal({ "rate-limiting" => 2, "ci-cd" => 1 }, result)
+    assert_equal({ "rate-limiting" => 1, "ci-cd" => 1 }, result)
   end
 
-  test "extract_tags ignores standalone colons and colons without alphanumeric start" do
-    content = "::just colons:: and :-starts-with-hyphen:"
+  test "extract_tags ignores lines that don't start and end with colon" do
+    # Inline tags in prose are NOT extracted — only dedicated tag lines
+    content = "This page is about :rust: and :api:."
+    result = Gollum::TagIndex.extract_tags(content)
+    assert_equal({}, result)
+  end
+
+  test "extract_tags ignores standalone colons and colons without letter start" do
+    content = "::just colons::\n:-starts-with-hyphen:"
     result = Gollum::TagIndex.extract_tags(content)
     assert_equal({}, result)
   end
 
   test "extract_tags with underscores works" do
-    content = ":hello_world: is a tag"
+    content = ":hello_world:"
     result = Gollum::TagIndex.extract_tags(content)
     assert_equal({ "hello_world" => 1 }, result)
   end
 
-  test "extract_tags excludes MAC addresses" do
-    # MAC like :aa:bb:cc:dd:ee:ff: should not extract any tags
-    result = Gollum::TagIndex.extract_tags("Device MAC is :aa:bb:cc:dd:ee:ff:")
-    assert_equal({}, result, "Should not extract tags from MAC addresses")
-  end
-
-  test "extract_tags excludes MAC addresses with uppercase hex" do
-    result = Gollum::TagIndex.extract_tags("MAC :AA:BB:CC:DD:EE:FF: is valid")
-    assert_equal({}, result, "Should not extract tags from uppercase MAC")
-  end
-
-  test "extract_tags excludes MAC addresses mixed with real tags" do
-    content = ":rust: on MAC :aa:bb:cc:dd:ee:ff: is :api:"
+  test "extract_tags ignores MAC addresses on prose lines" do
+    # MAC on a non-tag line — ignored because line doesn't start with :
+    content = "Device MAC is :aa:bb:cc:dd:ee:ff:"
     result = Gollum::TagIndex.extract_tags(content)
-    assert_equal({ "rust" => 1, "api" => 1 }, result, "Should extract real tags but not MAC parts")
+    assert_equal({}, result)
   end
 
-  test "extract_tags excludes bare MAC without surrounding colons" do
-    # MAC as (2C:F0:5D:74:09:65): — no leading/trailing colons around the full MAC
+  test "extract_tags ignores bare MAC without surrounding colons" do
     content = "ResistanceIsCharacterForming (2C:F0:5D:74:09:65): 192.168.0.58/24"
     result = Gollum::TagIndex.extract_tags(content)
-    assert_equal({}, result, "Should not extract any tags from bare MAC")
+    assert_equal({}, result)
   end
 
-  test "extract_tags excludes bare MAC with real tags nearby" do
-    content = ":rust: device (2C:F0:5D:74:09:65) is :api:"
+  test "extract_tags still scans proper tag lines even when MACs exist nearby" do
+    content = <<~MD
+      :rust:api:
+      Device MAC is aa:bb:cc:dd:ee:ff
+      :deployment:
+    MD
     result = Gollum::TagIndex.extract_tags(content)
-    assert_equal({ "rust" => 1, "api" => 1 }, result, "Should extract real tags, not bare MAC parts")
+    assert_equal({ "rust" => 1, "api" => 1, "deployment" => 1 }, result)
   end
 
-  test "extract_tags still accepts alphanumeric tags starting with a letter" do
-    result = Gollum::TagIndex.extract_tags(":node-js: and :v2-api: work")
+  test "extract_tags accepts alphanumeric tags starting with a letter" do
+    content = ":node-js:v2-api:"
+    result = Gollum::TagIndex.extract_tags(content)
     assert_equal({ "node-js" => 1, "v2-api" => 1 }, result)
   end
 
   # ── scanning the wiki ───────────────────────────────────────────────
 
   test "scan_wiki extracts tags from all pages" do
-    # Write a few pages with known tags
-    @wiki.write_page("tagpage1", :markdown, ":rust: and :api: and :rust:", commit_details)
-    @wiki.write_page("tagpage2", :markdown, ":api: and :deployment:", commit_details)
+    # Write pages with proper tag lines
+    @wiki.write_page("tagpage1", :markdown, ":rust:api:rust:", commit_details)
+    @wiki.write_page("tagpage2", :markdown, ":api:deployment:", commit_details)
     @wiki.write_page("tagpage3", :markdown, "no tags here", commit_details)
 
     result = Gollum::TagIndex.scan_wiki(@wiki)
     assert_equal({ "rust" => 2, "api" => 2, "deployment" => 1 }, result)
   end
 
-  test "scan_wiki skips binary files and non-markdown" do
-    # Only markdown/wiki pages are scanned
-    @wiki.write_page("notes", :markdown, ":rust: :api:", commit_details)
+  test "scan_wiki skips pages with no tag lines" do
+    @wiki.write_page("notes", :markdown, ":rust:api:", commit_details)
     result = Gollum::TagIndex.scan_wiki(@wiki)
     assert result.key?("rust")
     assert result.key?("api")
@@ -144,7 +154,7 @@ context "TagIndex" do
   # ── full reindex ────────────────────────────────────────────────────
 
   test "reindex! scans and saves" do
-    @wiki.write_page("reindextest", :markdown, ":golang: :golang: :ruby:", commit_details)
+    @wiki.write_page("reindextest", :markdown, ":golang:golang:ruby:", commit_details)
     Gollum::TagIndex.reindex!(@wiki)
     loaded = Gollum::TagIndex.load(@wiki)
     assert_equal({ "golang" => 2, "ruby" => 1 }, loaded)

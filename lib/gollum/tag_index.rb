@@ -19,28 +19,28 @@ module Gollum
     # Extraction
     # -------------------------------------------------------------------
 
-    # Pattern for MAC addresses: xx:xx:xx:xx:xx:xx
-    # (6 groups of 2 hex digits, colon-separated, may appear with or
-    #  without surrounding colons — e.g. :aa:bb:cc:dd:ee:ff: or
-    #  (2C:F0:5D:74:09:65) or bare 2C:F0:5D:74:09:65)
-    MAC_RE = /[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}/
-
     # Extract tags from a single page's raw text.
     # Returns a Hash of  tag_name(string) => count(Integer).
     # +text+ may be nil or a String.
-    # MAC addresses (e.g. :aa:bb:cc:dd:ee:ff:) are stripped first
-    # so their hex pairs are never counted as tags.
+    #
+    # Only lines that begin AND end with a colon are scanned for tags.
+    # This means a tag line looks like  :rust:programming:coding:
+    # and non-tag lines (prose, MAC addresses, IPs) are ignored entirely.
     def self.extract_tags(text)
       return {} unless text.is_a?(::String)
 
-      # Remove MAC addresses before tag scanning
-      clean = text.gsub(MAC_RE, '')
-
       counts = Hash.new(0)
-      clean.scan(TAG_RE) do |match|
-        tag = match.first.downcase
-        counts[tag] += 1 unless tag.empty?
+
+      text.each_line do |line|
+        line = line.strip
+        next unless line.start_with?(':') && line.end_with?(':')
+
+        line.scan(TAG_RE) do |match|
+          tag = match.first.downcase
+          counts[tag] += 1 unless tag.empty?
+        end
       end
+
       counts
     end
 

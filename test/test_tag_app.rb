@@ -11,10 +11,10 @@ context "TagCloud on search page" do
     Precious::App.set(:wiki_options, {allow_editing: true})
     Gollum::TagIndex.reset!(@wiki)
 
-    # Seed some tagged pages
-    @wiki.write_page("tagp1", :markdown, "Content about :rust: and :api:", commit_details)
-    @wiki.write_page("tagp2", :markdown, "More :rust: and :deployment:", commit_details)
-    @wiki.write_page("tagp3", :markdown, ":api: :api: and :testing:", commit_details)
+    # Seed some tagged pages with proper tag lines (start/end with :)
+    @wiki.write_page("tagp1", :markdown, ":rust:api:rust:", commit_details)
+    @wiki.write_page("tagp2", :markdown, ":rust:deployment:", commit_details)
+    @wiki.write_page("tagp3", :markdown, ":api:api:testing:", commit_details)
     Gollum::TagIndex.reindex!(@wiki)
   end
 
@@ -77,7 +77,7 @@ context "TagCloud on search page" do
 
   test "search page includes the toggle JavaScript" do
     get '/search'
-    assert_match /tags\.js/, last_response.body
+    assert_match /Tag pill toggle/, last_response.body
   end
 
   test "search page works without tags (no crash)" do
